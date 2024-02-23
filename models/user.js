@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  gitHublink: {
+  githubLink: {
     type: String,
   },
   password: {
@@ -34,14 +34,6 @@ const userSchema = new mongoose.Schema({
     required: true,
     minLength: 5,
   },
-});
-
-userSchema.virtual("id").get(function () {
-  return this._id.toHexString();
-});
-
-userSchema.set("toJSON", {
-  virtuals: true,
 });
 
 userSchema.methods.createHash = async function (plainTextPassword) {
@@ -56,4 +48,4 @@ userSchema.methods.validatePassword = async function (candidatePassword) {
 
 const User = mongoose.model("User", userSchema);
 
-module.exports = { User };
+module.exports = User;
