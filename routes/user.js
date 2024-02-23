@@ -3,6 +3,7 @@ const zod = require("zod");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const { JWT_SECRET } = require("../config");
+const authMiddleware = require("../middleware");
 const userRouter = express.Router();
 
 const signupBody = zod.object({
@@ -100,4 +101,28 @@ userRouter.post("/signin", async (req, res) => {
     res.status(400).json({ error: error.message || "Internal Server Error" });
   }
 });
+
+userRouter.post("/:userId", authMiddleware, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(400).json({ message: "User not found" });
+    }
+    user.points += 1;
+    const saveUser = await user.save();
+    if (saveUser) {
+      res.json({
+        message: "Updated points successfully",
+      });
+    } else {
+      res.status(400).json({
+        message: "Failed to update the points",
+      });
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message || "Internal Server Error" });
+  }
+});
+
 module.exports = userRouter;
