@@ -125,4 +125,21 @@ userRouter.post("/:userId", authMiddleware, async (req, res) => {
   }
 });
 
+userRouter.get("/points", authMiddleware, async (req, res) => {
+  const { order } = req.query;
+  if (order == "descending") {
+    const users = await User.find({}).sort({ points: -1 });
+    res.json({
+      message: "Sorted users by descending order based on points",
+      users: users,
+    });
+  } else {
+    const users = await User.find({}).sort({ points: 1 });
+    res.json({
+      message: "Sorted users by ascending order based on points",
+      users: users,
+    });
+  }
+});
+
 module.exports = userRouter;
