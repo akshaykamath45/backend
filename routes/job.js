@@ -2,8 +2,9 @@ const express = require("express");
 const JobListing = require("../models/job");
 
 const jobRouter = express.Router();
+const authMiddleware = require("../middleware");
 
-jobRouter.post("/", async (req, res) => {
+jobRouter.post("/", authMiddleware, async (req, res) => {
   try {
     const { date, link, title, usersApplied } = req.body;
     const newJobListing = new JobListing({
@@ -33,7 +34,7 @@ jobRouter.get("/", async (req, res) => {
   }
 });
 
-jobRouter.get("/:id", async (req, res) => {
+jobRouter.get("/:id", authMiddleware, async (req, res) => {
   try {
     const job = await JobListing.findById(req.params.id);
     if (!job) {
@@ -46,7 +47,7 @@ jobRouter.get("/:id", async (req, res) => {
   }
 });
 
-jobRouter.put("/:id", async (req, res) => {
+jobRouter.put("/:id", authMiddleware, async (req, res) => {
   try {
     const { date, link, title, usersApplied } = req.body;
 
@@ -68,7 +69,7 @@ jobRouter.put("/:id", async (req, res) => {
   }
 });
 
-jobRouter.delete("/:id", async (req, res) => {
+jobRouter.delete("/:id", authMiddleware, async (req, res) => {
   try {
     const deletedJobListing = await JobListing.findByIdAndDelete(req.params.id);
     if (!deletedJobListing) {
