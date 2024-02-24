@@ -6,6 +6,7 @@ const { JWT_SECRET } = require("../config");
 const authMiddleware = require("../middleware");
 const userRouter = express.Router();
 
+// user signup
 const signupBody = zod.object({
   username: zod.string().min(3).max(30),
   firstName: zod.string(),
@@ -14,7 +15,6 @@ const signupBody = zod.object({
   points: zod.number().optional(),
   githubLink: zod.string(),
 });
-
 userRouter.post("/signup", async (req, res) => {
   try {
     const { success, data, error } = signupBody.safeParse(req.body);
@@ -61,6 +61,7 @@ userRouter.post("/signup", async (req, res) => {
   }
 });
 
+//user signin
 const signinBody = zod.object({
   username: zod.string(),
   password: zod.string(),
@@ -102,12 +103,77 @@ userRouter.post("/signin", async (req, res) => {
   }
 });
 
-userRouter.post("/:userId", authMiddleware, async (req, res) => {
+// retrieve all users
+userRouter.get("/", authMiddleware, async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json({ users });
+  } catch (error) {
+    res.status(400).json({ error: "Internal Server Error" });
+  }
+});
+
+// retrieve a user
+userRouter.get("/:userId", authMiddleware, async (req, res) => {
   try {
     const { userId } = req.params;
     const user = await User.findById(userId);
     if (!user) {
-      res.status(400).json({ message: "User not found" });
+      return res.status(411).json({ message: "User not found" });
+    }
+    res.json({ user });
+  } catch (error) {
+    res.status(400).json({ error: "Internal Server Error" });
+  }
+});
+
+// update a user
+userRouter.put("/:userId", authMiddleware, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { username, firstName, lastName, githubLink } = req.body;
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { username, firstName, lastName, githubLink },
+      { new: true }
+    );
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+    await user.save();
+    res.json({
+      message: "Updated user successfully",
+      user: user,
+    });
+  } catch (error) {
+    res.status(400).json({ error: "Internal Server Error" });
+  }
+});
+
+// delete a user
+userRouter.delete("/:userId", authMiddleware, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findByIdAndDelete(userId);
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+    res.json({
+      message: "Deleted user successfully",
+      user: user,
+    });
+  } catch (error) {
+    res.status(400).json({ error: "Internal Server Error" });
+  }
+});
+
+// update user points
+userRouter.post("/points/:userId", authMiddleware, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
     }
     user.points += 1;
     const saveUser = await user.save();
@@ -121,24 +187,29 @@ userRouter.post("/:userId", authMiddleware, async (req, res) => {
       });
     }
   } catch (error) {
-    res.status(400).json({ error: error.message || "Internal Server Error" });
+    res.status(400).json({ error: "Internal Server Error" });
   }
 });
 
+// retrieve user points by order (ascending/descending)
 userRouter.get("/points", authMiddleware, async (req, res) => {
-  const { order } = req.query;
-  if (order == "descending") {
-    const users = await User.find({}).sort({ points: -1 });
-    res.json({
-      message: "Sorted users by descending order based on points",
-      users: users,
-    });
-  } else {
-    const users = await User.find({}).sort({ points: 1 });
-    res.json({
-      message: "Sorted users by ascending order based on points",
-      users: users,
-    });
+  try {
+    const { order } = req.query;
+    if (order == "descending") {
+      const users = await User.find({}).sort({ points: -1 });
+      res.json({
+        message: "Sorted users by descending order based on points",
+        users: users,
+      });
+    } else {
+      const users = await User.find({}).sort({ points: 1 });
+      res.json({
+        message: "Sorted users by ascending order based on points",
+        users: users,
+      });
+    }
+  } catch (error) {
+    res.status(400).json({ error: "Internal Server Error" });
   }
 });
 
