@@ -109,7 +109,7 @@ userRouter.get("/", authMiddleware, async (req, res) => {
     const users = await User.find();
     res.json({ users });
   } catch (error) {
-    res.status(400).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
@@ -123,7 +123,7 @@ userRouter.get("/:userId", authMiddleware, async (req, res) => {
     }
     res.json({ user });
   } catch (error) {
-    res.status(400).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
@@ -209,7 +209,7 @@ userRouter.get("/points", authMiddleware, async (req, res) => {
       });
     }
   } catch (error) {
-    res.status(400).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
