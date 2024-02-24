@@ -37,7 +37,7 @@
       - /points/:userId - POST: Update user points.
       - /points - GET: Retrieve users sorted by points order.
 
-   - Job Routes (/job):
+    - Job Routes (/job):
       - / - POST: Create a new job listing.
       - / - GET: Retrieve all job listings.
       - /:id - GET: Retrieve a job listing by ID.
